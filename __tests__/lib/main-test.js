@@ -5,8 +5,8 @@ const Main = require('../../lib/main');
 describe('Main', function() {
   beforeEach(function() {
     this.fileService = {
-      getAllFileData: jest.fn(),
-      writeJson: jest.fn()
+      getAllFileData: jest.fn().mockReturnValue(Promise.resolve()),
+      writeJson: jest.fn().mockReturnValue(Promise.resolve())
     };
     this.processor = jest.fn();
     this.main = new Main({
@@ -16,24 +16,44 @@ describe('Main', function() {
   });
 
   describe('#process', function() {
-    it('fetches the given file names', function() {
+    it('fetches the given file names', function(done) {
       const files = ['foo/bar.json', 'bar/foo.json'];
-      this.main.process(files);
-      expect(this.fileService.getAllFileData).toHaveBeenCalledWith(files);
+      this.main
+        .process(files)
+        .then(() => {
+          expect(this.fileService.getAllFileData).toHaveBeenCalledWith(files);
+          done();
+        })
+        .catch(done.fail);
     });
 
-    it('processes fetched data', function() {
+    it('processes fetched data', function(done) {
       const mockFileData = [{}, {}];
-      this.fileService.getAllFileData.mockReturnValue(mockFileData);
-      this.main.process([]);
-      expect(this.processor).toHaveBeenCalledWith(mockFileData);
+      this.fileService.getAllFileData.mockReturnValue(
+        Promise.resolve(mockFileData)
+      );
+      this.main
+        .process([])
+        .then(() => {
+          expect(this.processor).toHaveBeenCalledWith(mockFileData);
+          done();
+        })
+        .catch(done.fail);
     });
 
-    it('writes data to file', function() {
+    it('writes data to file', function(done) {
       const mockSummary = {};
       this.processor.mockReturnValue(mockSummary);
-      this.main.process([]);
-      expect(this.fileService.writeJson).toHaveBeenCalledWith(mockSummary);
+      this.main
+        .process([])
+        .then(() => {
+          expect(this.fileService.writeJson).toHaveBeenCalledWith(
+            Main.SUMMARY_FILEPATH,
+            mockSummary
+          );
+          done();
+        })
+        .catch(done.fail);
     });
   });
 });
