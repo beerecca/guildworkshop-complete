@@ -2,15 +2,8 @@ const FileService = require('../../lib/file-service');
 
 describe('FileService', function() {
   beforeEach(function() {
-    this.files = ['foo/bar.json', 'bar/foo.json'];
-    this.firstReturnValue = { items: [{ foo: 'bar' }] };
-    this.secondReturnValue = { items: [{ bar: 'baz' }] };
-    const readJsonMock = jest
-      .fn()
-      .mockReturnValueOnce(this.firstReturnValue)
-      .mockReturnValueOnce(this.secondReturnValue);
     this.fs = {
-      readJson: readJsonMock,
+      readJson: jest.fn().mockReturnValue(Promise.resolve()),
       outputJson: jest.fn().mockReturnValue(Promise.resolve())
     };
     this.fileService = new FileService({
@@ -19,6 +12,15 @@ describe('FileService', function() {
   });
 
   describe('#getAllFileData', function() {
+    beforeEach(function() {
+      this.files = ['foo/bar.json', 'bar/foo.json'];
+      this.firstReturnValue = { items: [{ foo: 'bar' }] };
+      this.secondReturnValue = { items: [{ bar: 'baz' }] };
+      this.fs.readJson
+        .mockReturnValueOnce(this.firstReturnValue)
+        .mockReturnValueOnce(this.secondReturnValue);
+    });
+
     it('fetches given files', function(done) {
       this.fileService
         .getAllFileData(this.files)
