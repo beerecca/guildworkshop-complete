@@ -32,16 +32,3 @@ describe('processor', function() {
     expect(typeof data).toBe('object');
   });
 });
-
-describe('tasks', function() {
-  describe('avg', function() {
-    const avg = getTaskByName('avg');
-    it('returns some average', function() {
-      expect(avg.func()).toBe('some average');
-    });
-  });
-});
-
-function getTaskByName(name) {
-  return processor.TASKS.find(task => task.name === name);
-}
