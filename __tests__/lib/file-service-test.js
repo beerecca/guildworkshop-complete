@@ -9,7 +9,10 @@ describe('FileService', function() {
       .fn()
       .mockReturnValueOnce(this.firstReturnValue)
       .mockReturnValueOnce(this.secondReturnValue);
-    this.fs = { readJson: readJsonMock };
+    this.fs = {
+      readJson: readJsonMock,
+      outputJson: jest.fn().mockReturnValue(Promise.resolve())
+    };
     this.fileService = new FileService({
       fs: this.fs
     });
@@ -33,6 +36,20 @@ describe('FileService', function() {
         .then(result => {
           expect(result[0]).toBe(this.firstReturnValue.items[0]);
           expect(result[1]).toBe(this.secondReturnValue.items[0]);
+          done();
+        })
+        .catch(done.fail);
+    });
+  });
+
+  describe('#writeJson', function() {
+    it('writes given object to given filepath', function(done) {
+      const data = { foo: 'bar' };
+      const filePath = './foo.json';
+      this.fileService
+        .writeJson(filePath, data)
+        .then(() => {
+          expect(this.fs.outputJson).toHaveBeenCalledWith(filePath, data);
           done();
         })
         .catch(done.fail);
